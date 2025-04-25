@@ -1,5 +1,5 @@
 from Gui import *
 
-mode_password_ip = password_window()
+user_config = password_window()
 
-print(mode_password_ip)
+print(user_config)
