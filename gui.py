@@ -9,7 +9,7 @@ def password_window():
 
     # Config main password window
     password_window = Tk()
-    password_window.geometry("400x300")
+    password_window.geometry("500x300")
     password_window.title("IM - Password")
 
 
@@ -42,7 +42,7 @@ def password_window():
     ip_var = StringVar()
     
     # Ip Instructions
-    ip_instruction = Label(password_window, text="Please enter IP address below if you are the client:")
+    ip_instruction = Label(password_window, text="Please enter IP address for the server you want to connect to below if you are the client:")
     ip_instruction.pack(pady=10)
 
     # Ip Address entry
