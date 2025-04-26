@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
 
-
 # Password window
 def password_window():
 
@@ -70,21 +69,29 @@ def password_window():
             messagebox.showinfo("Success", f"Connecting as client with valid password.")
         else:
             messagebox.showinfo("Success", f"Connecting as server with valid password.")
-
+        
         # Populate the result dictionary
         user_config["mode"] = mode.get()
         user_config["password"] = password
         user_config["ip"] = ip if mode.get() == 0 else None
 
         password_window.destroy()  # Close the password window
-        
+
+    # Function to handle cancel
+    def cancel_connection():
+        user_config.clear()  # Clear any existing configuration
+        password_window.destroy()  # Close the window
     # Connect button
     connect_button = Button(password_window, text="Connect", command=validate_and_connect)
-    connect_button.pack(pady=10)
+    connect_button.pack(padx=10)
+
+    # Cancel button
+    connect_button = Button(password_window, text="Cancel", command=cancel_connection)
+    connect_button.pack(padx=10)
 
     toggle_ip_field()  # Set initial state
     password_window.mainloop()
-
+        
     # Return dictionary with pass
     return user_config
 
