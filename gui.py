@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from AppController import *
 
 # Password window
 def password_window():
@@ -10,7 +11,6 @@ def password_window():
     password_window = Tk()
     password_window.geometry("400x300")
     password_window.title("IM - Password")
-
 
     # Password Instructions
     password_instruction = Label(password_window, text="Please enter your password below:")
@@ -99,7 +99,84 @@ def password_window():
 def message_window():
 
     root = Tk()
-    root.geometry("420x420")
+    root.geometry("600x500")
     root.title("IM - Message")
+
+    # Create frame for messages display
+    messages_frame = Frame(root)
+    messages_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
+
+    # Scrollbar for message history
+    scrollbar = Scrollbar(messages_frame)
+    scrollbar.pack(side=RIGHT, fill=Y)
+
+    # Text widget to display messages
+    msg_display = Text(messages_frame, wrap=WORD, yscrollcommand=scrollbar.set, state=DISABLED)
+    msg_display.pack(fill=BOTH, expand=True)
+    scrollbar.config(command=msg_display.yview)
+
+    # Frame for message input and send button
+    input_frame = Frame(root)
+    input_frame.pack(fill=X, padx=10, pady=10)
+
+    # Message input field
+    message_var = StringVar()
+    message_entry = Entry(input_frame, textvariable=message_var, width=50)
+    message_entry.pack(side=LEFT, fill=X, expand=True, padx=(0, 10))
+    message_entry.focus()
+
+    # Function to update message display
+    def update_message_display():
+        # Enable text widget for editing
+        msg_display.config(state=NORMAL)
+        msg_display.delete(1.0, END)  # Clear current content
+        
+        for msg in message_history:
+            if msg['type'] == 'sent':
+                # Format sent messages
+                msg_display.insert(END, f"You: {msg['plaintext']}\n", 'sent')
+                msg_display.tag_configure('sent', foreground='blue')
+            else:
+                # Format received messages
+                msg_display.insert(END, f"Them: {msg['plaintext']}\n", 'received')
+                msg_display.tag_configure('received', foreground='green')
+        
+        # Disable text widget to prevent editing
+        msg_display.config(state=DISABLED)
+        
+        # Scroll to the bottom to show latest messages
+        msg_display.see(END)
+    
+    # Function to send a message
+    def send_message_gui():
+        message = message_var.get().strip()
+        if message:
+            # From app controller
+            if send_message(message):
+                message_var.set("")  # Clear input field
+                update_message_display()  # Update the display
+    
+    # Send button
+    send_button = Button(input_frame, text="Send", command=send_message_gui)
+    send_button.pack(side=RIGHT)
+    
+    # Bind Enter key to send message
+    message_entry.bind("<Return>", lambda event: send_message_gui())
+    
+    # Function to periodically update the message display
+    def periodic_update():
+        update_message_display()
+        root.after(1000, periodic_update)  # Schedule next update in 1 second
+    
+    # Start periodic updates
+    periodic_update()
+    
+    # Function to handle window close
+    def on_closing():
+        disconnect()
+        root.destroy()
+    
+    # Set the window close handler
+    root.protocol("WM_DELETE_WINDOW", on_closing)
 
     root.mainloop()
