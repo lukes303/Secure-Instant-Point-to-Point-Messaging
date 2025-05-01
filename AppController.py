@@ -101,26 +101,25 @@ def accept_connections():
         threading.Thread(target=receive_messages, args=(conn_socket,), daemon=True).start()
 
 def receive_messages(client_socket):
-    """Continuously receive messages from the client"""
     while True:
         try:
             encrypted_msg = client_socket.recv(1024).decode()
             if not encrypted_msg:
-                break  # Connection closed by the client
-            
-            # Decrypt the message
+                break
             plaintext = crypto.decrypt(encrypted_msg)
-            
-            # Add to message history
             message_history.append({
                 'type': 'received',
                 'ciphertext': encrypted_msg,
                 'plaintext': plaintext,
                 'from': peer_ip
             })
-            
         except ConnectionError:
+            print("Connection lost.")
             break
+
+    client_socket.close()
+    client_socket = None  # This sets the global client_socket to None
+
 
 def send_message(plaintext):
     """Encrypt and send a message"""
@@ -129,7 +128,11 @@ def send_message(plaintext):
         return False
         
     encrypted_msg = crypto.encrypt(plaintext)
-    client_socket.send(encrypted_msg.encode())
+    try:
+        client_socket.send(encrypted_msg.encode())
+    except (BrokenPipeError, OSError):
+        print("Error: Connection is broken. Cannot send.")
+        return False
     
     # Add to message history
     message_history.append({
