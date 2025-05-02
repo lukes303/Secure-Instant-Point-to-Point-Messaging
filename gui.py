@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import AppController
 from AppController import *
 
 # Password window
@@ -23,19 +24,19 @@ def password_window():
     password_entry = Entry(password_window, textvariable=password_var, width=35)
     password_entry.pack(pady=10)
 
-    # mode - default to client
-    mode = IntVar(value=0)
+    # mode_var - default to client
+    mode_var = IntVar(value=0)
 
     # Function for toggling IP address field
     def toggle_ip_field():
-        if mode.get() == 0:  # Client selected
+        if mode_var.get() == 0:  # Client selected
             ip_entry.config(state=NORMAL)
         else:  # Server selected
             ip_entry.config(state=DISABLED)
 
     # Run options
-    Radiobutton(password_window, text="Run as Client", variable=mode, value=0, command=toggle_ip_field).pack() # 0 - client
-    Radiobutton(password_window, text="Run as Server", variable=mode, value=1, command=toggle_ip_field).pack() # 1 - server
+    Radiobutton(password_window, text="Run as Client", variable=mode_var, value=0, command=toggle_ip_field).pack() # 0 - client
+    Radiobutton(password_window, text="Run as Server", variable=mode_var, value=1, command=toggle_ip_field).pack() # 1 - server
 
     # Create a StringVar to track the IP entry content
     ip_var = StringVar()
@@ -60,20 +61,20 @@ def password_window():
             return
         
         # IP address validation
-        if mode.get() == 0 and not ip.strip():
+        if mode_var.get() == 0 and not ip.strip():
             messagebox.showerror("Error", "IP address cannot be empty if client.")
             return
         
         # Connection comfirmation
-        if mode.get() == 0:
+        if mode_var.get() == 0:
             messagebox.showinfo("Success", f"Connecting as client with valid password.")
         else:
             messagebox.showinfo("Success", f"Connecting as server with valid password.")
         
         # Populate the result dictionary
-        user_config["mode"] = mode.get()
+        user_config["mode"] = mode_var.get()
         user_config["password"] = password
-        user_config["ip"] = ip if mode.get() == 0 else None
+        user_config["ip"] = ip if mode_var.get() == 0 else None
 
         password_window.destroy()  # Close the password window
 
@@ -100,8 +101,13 @@ def message_window():
 
     root = Tk()
     root.geometry("600x500")
-    root.title("IM - Message")
 
+    # Give frame appropriate title
+    if AppController.mode == 'server':
+        root.title("IM - Message: Server")
+    else:
+        root.title("IM - Message: Client")
+    
     # Create frame for messages display
     messages_frame = Frame(root)
     messages_frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
@@ -131,14 +137,18 @@ def message_window():
         msg_display.config(state=NORMAL)
         msg_display.delete(1.0, END)  # Clear current content
         
-        for msg in message_history:
+        for msg in AppController.message_history:
             if msg['type'] == 'sent':
                 # Format sent messages
                 msg_display.insert(END, f"You: {msg['plaintext']}\n", 'sent')
+                msg_display.insert(END, f"Ciphertext: {msg['ciphertext']}\n", 'sent')
+                msg_display.insert(END, "\n")
                 msg_display.tag_configure('sent', foreground='blue')
             else:
                 # Format received messages
                 msg_display.insert(END, f"Them: {msg['plaintext']}\n", 'received')
+                msg_display.insert(END, f"Ciphertext: {msg['ciphertext']}\n", 'received')
+                msg_display.insert(END, "\n")
                 msg_display.tag_configure('received', foreground='green')
         
         # Disable text widget to prevent editing
