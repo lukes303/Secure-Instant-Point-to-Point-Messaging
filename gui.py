@@ -142,17 +142,20 @@ def message_window():
                 # Format sent messages
                 msg_display.insert(END, f"You: {msg['plaintext']}\n", 'sent')
                 msg_display.insert(END, f"Ciphertext: {msg['ciphertext']}\n", 'sent')
+                msg_display.insert(END, f"Salt: {msg['salt']}\n", 'sent')
                 msg_display.insert(END, "\n")
                 msg_display.tag_configure('sent', foreground='blue')
             else:
                 # Format received messages
                 msg_display.insert(END, f"Them: {msg['plaintext']}\n", 'received')
                 msg_display.insert(END, f"Ciphertext: {msg['ciphertext']}\n", 'received')
+                msg_display.insert(END, f"Salt: {msg['salt']}\n", 'received')
                 msg_display.insert(END, "\n")
                 msg_display.tag_configure('received', foreground='green')
         
         # Disable text widget to prevent editing
         msg_display.config(state=DISABLED)
+        
         
         # Scroll to the bottom to show latest messages
         msg_display.see(END)

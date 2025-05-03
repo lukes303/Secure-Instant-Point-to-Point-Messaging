@@ -1,5 +1,6 @@
 import socket
 import threading
+import base64
 from Cryptography import Cryptography
 # from logging import config
 from time import sleep
@@ -101,15 +102,23 @@ def accept_connections():
         threading.Thread(target=receive_messages, args=(conn_socket,), daemon=True).start()
 
 def receive_messages(client_socket):
+    global password  # we need password here to reinitialize crypto
+
     while True:
         try:
-            encrypted_msg = client_socket.recv(1024).decode()
-            if not encrypted_msg:
-                break
+            salted_message = client_socket.recv(1024).decode()
+
+            salt_b64, encrypted_msg = salted_message.split(":", 1)
+            salt = base64.b64decode(salt_b64)
+
+            # Reinitialize crypto with received salt
+            crypto.initialize(password, salt)
             plaintext = crypto.decrypt(encrypted_msg)
+
             message_history.append({
                 'type': 'received',
                 'ciphertext': encrypted_msg,
+                'salt': salt_b64,
                 'plaintext': plaintext,
                 'from': peer_ip
             })
@@ -118,30 +127,33 @@ def receive_messages(client_socket):
             break
 
     client_socket.close()
-    client_socket = None  # This sets the global client_socket to None
-
 
 def send_message(plaintext):
     """Encrypt and send a message"""
     global client_socket, peer_ip
     if not client_socket:
         return False
-        
+
     encrypted_msg = crypto.encrypt(plaintext)
+    salt_b64 = base64.b64encode(crypto.password_salt).decode()
+    salted_message = salt_b64 + ":" + encrypted_msg
+
+
     try:
-        client_socket.send(encrypted_msg.encode())
+        client_socket.send(salted_message.encode())
     except (BrokenPipeError, OSError):
         print("Error: Connection is broken. Cannot send.")
         return False
-    
+
     # Add to message history
     message_history.append({
         'type': 'sent',
         'ciphertext': encrypted_msg,
+        'salt': salt_b64,
         'plaintext': plaintext,
         'to': peer_ip
     })
-    
+
     return True
 
 def disconnect():
