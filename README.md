@@ -4,6 +4,7 @@ Joseph Rodriguez, Luke Selby, Blake Shore, Ziyu Wang
 
 ### Requirements
 Python 3.12
+
 cryptography 44.0.2
 
 ### Installation
