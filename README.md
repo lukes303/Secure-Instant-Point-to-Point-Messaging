@@ -20,7 +20,7 @@ Install Cryptography using pip install cryptography.
 1. Run main.py with python using the command `python main.py.`
 2. Enter the password for your messaging session. Must be the same password as the server.
 3. Choose run as client.
-4. Enter the ip address for the server you want to connect to.
+4. Enter the ip address for the server you want to connect to. Make sure it is the actual full Ip address of the server machine. (Not 127.0.0.1 if running both server and client on the same computer.)
 5. Click the connect button to start the session.
 
 ### Messaging Instructions
